@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cut">
+<meta name="theme-color" content="#0b1220">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>My Day</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#0b1220;--card:#131c2e;--card2:#1a2540;--line:#22304d;--txt:#e6ecf5;--mut:#8a97ad;--acc:#4f9dff;--ok:#34c38f;--warn:#f5b84a;--bad:#ff6b6b;--r:14px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--txt);padding-bottom:86px;font-size:15px}
+header{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(11,18,32,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header h1{font-size:18px;margin:0}
+main{padding:12px;max-width:720px;margin:auto}
+.tab{display:none}.tab.on{display:block}
+.card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:12px}
+h2{font-size:12px;margin:0 0 10px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em;display:flex;justify-content:space-between;align-items:center}
+input,select,textarea,button{font:inherit;color:inherit}
+input,select,textarea{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--acc)}
+textarea{min-height:80px;resize:vertical}
+.row{display:flex;gap:8px;margin-bottom:8px}.row>*{flex:1;min-width:0}.row>.s{flex:0 0 auto}
+button{background:var(--acc);border:0;border-radius:10px;padding:10px 14px;font-weight:600;color:#fff;cursor:pointer}
+button.ghost{background:var(--card2);color:var(--txt)}
+button.mini{padding:4px 10px;font-size:12px}
+.item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border:0}
+.grow{flex:1;min-width:0;word-wrap:break-word}
+.done .t{text-decoration:line-through;color:var(--mut)}
+.x{background:none;color:var(--mut);padding:4px 8px;font-weight:400}
+.chk{width:22px;height:22px;flex:0 0 22px;accent-color:var(--ok);padding:0}
+.muted{color:var(--mut)}.bad{color:var(--bad)}.okc{color:var(--ok)}
+small{font-size:12px}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:6;display:flex;background:#0e1628;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border-radius:0;padding:8px 0 6px;color:var(--mut);font-size:10px;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button span{font-size:20px;line-height:1}
+nav button.on{color:var(--acc)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:var(--card2);border-radius:12px;padding:10px}.stat b{display:block;font-size:18px;margin-top:2px}.stat small{color:var(--mut)}
+.bar{height:8px;background:var(--card2);border-radius:6px;overflow:hidden;margin:4px 0 10px}.bar i{display:block;height:100%;background:var(--acc)}
+.tag{font-size:11px;padding:2px 8px;border-radius:999px;background:var(--card2);white-space:nowrap}
+.tag.H{color:var(--bad)}.tag.M{color:var(--warn)}.tag.L{color:var(--ok)}
+.chips{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px}
+.chip{background:var(--card2);color:var(--txt);padding:6px 12px;border-radius:999px;font-size:13px;font-weight:500;white-space:nowrap}
+.chip.on{background:var(--acc);color:#fff}
+.warnbox{background:#3a2a10;color:var(--warn);border-radius:10px;padding:10px;font-size:13px;margin-bottom:10px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.cal .wd{font-size:11px;color:var(--mut);padding:4px 0}
+.cal .d{padding:9px 0;border-radius:10px;background:var(--card2);position:relative;font-size:14px;cursor:pointer}
+.cal .d.today{outline:2px solid var(--acc)}
+.cal .d.sel{background:var(--acc);color:#fff}
+.cal .dot{position:absolute;bottom:3px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--warn)}
+.gal{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.gal figure{margin:0;position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--card2);cursor:pointer}
+.gal img{width:100%;height:100%;object-fit:cover;display:block}
+.gal figcaption{position:absolute;bottom:0;left:0;right:0;font-size:11px;padding:14px 5px 4px;background:linear-gradient(transparent,#000c);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.capbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.capbtns button{padding:14px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px}
+.capbtns button span{font-size:26px}
+ol.tips{margin:0;padding-left:20px}ol.tips li{margin-bottom:8px;line-height:1.4}
+.news a{color:var(--txt);text-decoration:none;display:block;padding:9px 0;border-bottom:1px solid var(--line);line-height:1.35}
+.news a:last-child{border:0}
+.news small{display:block;color:var(--mut);margin-top:2px}
+dialog{background:var(--card);color:var(--txt);border:0;border-radius:16px;width:min(94vw,520px);padding:16px;max-height:90vh;overflow:auto}
+dialog::backdrop{background:#000b}
+dialog img{width:100%;border-radius:10px;display:block;margin-bottom:10px}
+.water{display:flex;align-items:center;justify-content:center;gap:16px;font-size:28px;font-weight:700}
+.water button{width:48px;height:48px;font-size:22px;border-radius:50%;padding:0}
+.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:10px 16px;border-radius:999px;opacity:0;transition:.3s;pointer-events:none;z-index:20;font-size:14px;max-width:90vw;text-align:center}
+.toast.on{opacity:1}
+label.lb{display:block;font-size:12px;color:var(--mut);margin:8px 0 4px}
+a.lnk{color:var(--acc);text-decoration:none;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="hdr">My Day</h1>
+  <button class="ghost mini" data-act="settings">⚙️ Settings</button>
+</header>
+
+<main>
+<!-- TODAY -->
+<section class="tab on" id="tab-today">
+  <div class="card">
+    <div style="font-size:20px;font-weight:700" id="hello"></div>
+    <div class="muted" id="dateLine" style="margin-bottom:12px"></div>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div class="card">
+    <h2>Today's 3 non-negotiables</h2>
+    <div class="row"><input id="p1" placeholder="1. The one thing that matters most"></div>
+    <div class="row"><input id="p2" placeholder="2."></div>
+    <div class="row" style="margin:0"><input id="p3" placeholder="3."></div>
+  </div>
+  <div class="card">
+    <h2>Day plan</h2>
+    <form id="planForm" class="row">
+      <input type="time" id="planTime" class="s" style="width:110px" required>
+      <input id="planText" placeholder="What will you do?" required>
+      <button class="s">+</button>
+    </form>
+    <div id="planList"></div>
+  </div>
+  <div class="card">
+    <h2>Today's reminders & events</h2>
+    <div id="todayRem"></div>
+  </div>
+  <div class="card">
+    <h2>End-of-day review</h2>
+    <textarea id="review" placeholder="What got done? What slipped, and why? What changes tomorrow?"></textarea>
+  </div>
+</section>
+
+<!-- TASKS -->
+<section class="tab" id="tab-tasks">
+  <div class="card">
+    <h2>Add task</h2>
+    <form id="taskForm">
+      <div class="row"><input id="taskText" placeholder="Task" required></div>
+      <div class="row" style="margin:0">
+        <select id="taskPri"><option value="H">High</option><option value="M" selected>Medium</option><option value="L">Low</option></select>
+        <input type="date" id="taskDue">
+        <button class="s">Add</button>
+      </div>
+    </form>
+  </div>
+  <div class="card">
+    <div class="chips" id="taskChips">
+      <button class="chip on" data-act="taskFilter" data-id="open">Open</button>
+      <button class="chip" data-act="taskFilter" data-id="all">All</button>
+      <button class="chip" data-act="taskFilter" data-id="done">Done</button>
+    </div>
+    <div id="taskWarn"></div>
+    <div id="taskList"></div>
+  </div>
+</section>
+
+<!-- MONEY -->
+<section class="tab" id="tab-money">
+  <div class="card">
+    <h2>Add expense</h2>
+    <form id="expForm">
+      <div class="row">
+        <input type="number" id="expAmt" placeholder="₹ Amount" step="0.01" min="0" inputmode="decimal" required>
+        <select id="expCat">
+          <option>Food</option><option>Groceries</option><option>Transport</option><option>Bills</option><option>Shopping</option><option>Health</option><option>Fun</option><option>Family</option><option>Other</option>
+        </select>
+      </div>
+      <div class="row" style="margin:0">
+        <input id="expNote" placeholder="Note (optional)">
+        <input type="date" id="expDate" class="s" style="width:140px">
+        <button class="s">Add</button>
+      </div>
+    </form>
+  </div>
+  <div class="card">
+    <h2>This month <span><input type="number" id="budget" placeholder="Monthly budget ₹" style="width:150px;padding:6px 8px;font-size:13px" inputmode="numeric"></span></h2>
+    <div id="moneySummary"></div>
+    <div id="catBars"></div>
+  </div>
+  <div class="card">
+    <h2>Recent</h2>
+    <div id="expList"></div>
+  </div>
+</section>
+
+<!-- DIET -->
+<section class="tab" id="tab-diet">
+  <div class="card">
+    <h2>My diet instructions</h2>
+    <textarea id="dietText" placeholder="e.g. No sugar after 6pm · Protein at every meal · 2 fruits a day · Dinner by 8:30pm"></textarea>
+  </div>
+  <div class="card">
+    <h2>Water today</h2>
+    <div class="water">
+      <button class="ghost" data-act="water" data-id="-1">−</button>
+      <div><span id="waterCount">0</span><span class="muted" style="font-size:16px"> / <span id="waterGoal">8</span> glasses</span></div>
+      <button data-act="water" data-id="1">+</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Meals today</h2>
+    <form id="mealForm" class="row">
+      <select id="mealType" class="s" style="width:120px"><option>Breakfast</option><option>Lunch</option><option>Snack</option><option>Dinner</option></select>
+      <input id="mealText" placeholder="What did you eat?" required>
+      <button class="s">+</button>
+    </form>
+    <div id="mealList"></div>
+  </div>
+</section>
+
+<!-- FEED -->
+<section class="tab" id="tab-feed">
+  <div class="card">
+    <h2>⚡ Energy news <button class="ghost mini" data-act="feedRefresh">↻ Refresh</button></h2>
+    <div class="news" id="energy"></div>
+  </div>
+  <div class="card">
+    <h2>🏛️ Political trends · mainstream</h2>
+    <div class="news" id="politics"></div>
+  </div>
+  <div class="card">
+    <h2>📡 Alternate & independent media</h2>
+    <div class="news" id="alt"></div>
+    <small class="muted">Sources: <span id="altSrc"></span> · edit in ⚙️ Settings</small>
+  </div>
+  <div class="card">
+    <h2>▶️ YouTubers</h2>
+    <div class="news" id="yt"></div>
+  </div>
+  <div class="card">
+    <h2>✅ Fact checks</h2>
+    <div class="news" id="fact"></div>
+    <small class="muted">From Indian fact-checkers. Tap <b>🔍 Check</b> under any headline to search fact-checks on it, or <b>⚖️ Compare</b> to see how other outlets cover it.</small>
+  </div>
+  <div class="card">
+    <h2>💪 5 health tips for today</h2>
+    <ol class="tips" id="health"></ol>
+  </div>
+  <div class="card">
+    <h2>🧠 5 ways to manage emotions today</h2>
+    <ol class="tips" id="mind"></ol>
+  </div>
+</section>
+
+<!-- CAMERA -->
+<section class="tab" id="tab-camera">
+  <div class="card">
+    <h2>Capture</h2>
+    <div class="capbtns">
+      <button data-act="cap" data-id="person"><span>🧑</span>Person</button>
+      <button data-act="cap" data-id="place"><span>📍</span>Place</button>
+      <button data-act="cap" data-id="card"><span>💼</span>Visiting card</button>
+    </div>
+    <div style="text-align:center;margin-top:10px"><a href="#" class="lnk" data-act="pick">or choose from gallery</a></div>
+    <input type="file" id="camInput" accept="image/*" capture="environment" hidden>
+    <input type="file" id="pickInput" accept="image/*" hidden>
+  </div>
+  <div class="card">
+    <div class="chips" id="galChips">
+      <button class="chip on" data-act="galFilter" data-id="all">All</button>
+      <button class="chip" data-act="galFilter" data-id="person">People</button>
+      <button class="chip" data-act="galFilter" data-id="place">Places</button>
+      <button class="chip" data-act="galFilter" data-id="card">Cards</button>
+    </div>
+    <div class="gal" id="gallery"></div>
+  </div>
+</section>
+
+<!-- CALENDAR -->
+<section class="tab" id="tab-cal">
+  <div class="card">
+    <h2><button class="ghost mini" data-act="calMove" data-id="-1">‹</button><span id="calTitle" style="color:var(--txt);font-size:15px;text-transform:none;letter-spacing:0"></span><button class="ghost mini" data-act="calMove" data-id="1">›</button></h2>
+    <div class="cal" id="calGrid"></div>
+  </div>
+  <div class="card">
+    <h2 id="dayTitle"></h2>
+    <div id="dayDetail"></div>
+    <form id="evForm" class="row" style="margin-top:10px">
+      <input type="time" id="evTime" class="s" style="width:110px">
+      <input id="evText" placeholder="Add event on this day" required>
+      <button class="s">+</button>
+    </form>
+  </div>
+  <div class="card">
+    <h2>⏰ Reminders</h2>
+    <form id="remForm">
+      <div class="row"><input id="remText" placeholder="Remind me to…" required></div>
+      <div class="row" style="margin:0"><input type="datetime-local" id="remAt" required><button class="s">Set</button></div>
+    </form>
+    <p class="muted" style="font-size:12px;margin:8px 0 0">In-app alerts only fire while this page is open. Tap <b>📅</b> on a reminder to add it to Google Calendar so your phone alerts you even when this app is closed.</p>
+    <div id="remList" style="margin-top:6px"></div>
+  </div>
+</section>
+</main>
+
+<nav id="nav">
+  <button class="on" data-act="tab" data-id="today"><span>🏠</span>Today</button>
+  <button data-act="tab" data-id="tasks"><span>✅</span>Tasks</button>
+  <button data-act="tab" data-id="money"><span>💰</span>Money</button>
+  <button data-act="tab" data-id="diet"><span>🥗</span>Diet</button>
+  <button data-act="tab" data-id="feed"><span>📰</span>Feed</button>
+  <button data-act="tab" data-id="camera"><span>📷</span>Camera</button>
+  <button data-act="tab" data-id="cal"><span>📅</span>Calendar</button>
+</nav>
+
+<!-- Dialogs -->
+<dialog id="photoDlg">
+  <img id="pdImg" alt="">
+  <div class="muted" id="pdType" style="font-size:12px;margin-bottom:6px"></div>
+  <input id="pdTitle" placeholder="Name / title">
+  <div id="pdPhoneWrap"><label class="lb">Phone</label><input id="pdPhone" type="tel" placeholder="Phone (optional)"></div>
+  <label class="lb">Notes</label>
+  <textarea id="pdNote" placeholder="Where you met, why it matters, follow-up…"></textarea>
+  <div class="row" style="margin-top:10px;margin-bottom:0"><button class="ghost" data-act="closeDlg" data-id="photoDlg">Cancel</button><button data-act="photoSave">Save</button></div>
+</dialog>
+
+<dialog id="viewDlg">
+  <img id="vdImg" alt="">
+  <div style="font-weight:700;font-size:17px" id="vdTitle"></div>
+  <div class="muted" style="font-size:12px" id="vdMeta"></div>
+  <div id="vdPhone" style="margin-top:6px"></div>
+  <p id="vdNote" style="white-space:pre-wrap"></p>
+  <div class="row" style="margin-bottom:0"><button class="ghost" data-act="photoDel">🗑 Delete</button><button class="ghost" data-act="photoShare">↗ Share</button><button data-act="closeDlg" data-id="viewDlg">Close</button></div>
+</dialog>
+
+<dialog id="remAlert">
+  <div style="font-size:30px">⏰</div>
+  <div style="font-weight:700;font-size:18px;margin:6px 0 14px;white-space:pre-wrap" id="remAlertText"></div>
+  <button style="width:100%" data-act="closeDlg" data-id="remAlert">Got it</button>
+</dialog>
+
+<dialog id="setDlg">
+  <h2>Settings</h2>
+  <label class="lb">Energy news topic</label><input id="setEnergy">
+  <label class="lb">Political news topic</label><input id="setPolitics">
+  <label class="lb">Alternate media websites (comma separated)</label><input id="setAlt">
+  <label class="lb">Fact-check websites (comma separated)</label><input id="setFact">
+  <label class="lb">YouTube channels — one per line: <i>Name | channel ID</i></label>
+  <textarea id="setYt" placeholder="My Channel | UCxxxxxxxxxxxxxxxxxxxxxx"></textarea>
+  <small class="muted">To get a channel ID: YouTube app → open channel → ⋮ / More → Share → Copy channel ID (starts with UC). A full youtube.com/channel/UC… link also works; @handles don't.</small>
+  <label class="lb">Daily water goal (glasses)</label><input id="setWater" type="number" min="1" max="20">
+  <div class="row" style="margin-top:12px"><button data-act="saveSettings">Save settings</button></div>
+  <h2 style="margin-top:16px">Backup (do this weekly)</h2>
+  <div class="row"><button class="ghost" data-act="export">⬇ Export backup</button><button class="ghost" data-act="import">⬆ Import backup</button></div>
+  <input type="file" id="importInput" accept="application/json,.json" hidden>
+  <div class="row"><button id="installBtn" style="display:none" data-act="install">📲 Install app</button></div>
+  <div class="row"><button class="ghost" data-act="notifPerm">🔔 Allow notifications</button></div>
+  <p class="muted" style="font-size:12px;line-height:1.5">All data stays on this phone in this browser. Clearing browser data deletes it — keep backups.<br><b>Install:</b> open this page in Chrome → ⋮ menu → <i>Add to Home screen</i>.</p>
+  <div class="row" style="margin:0"><button class="ghost" style="color:var(--bad)" data-act="wipe">Erase everything</button><button data-act="closeDlg" data-id="setDlg">Close</button></div>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const p2=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+const todayStr=()=>ymd(new Date());
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inr=n=>'₹'+(+n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+const fmtDate=s=>new Date(s+'T00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+const fmtDT=s=>new Date(s).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});
+const fmtT=t=>{if(!t)return'';const[h,m]=t.split(':');const d=new Date();d.setHours(+h,+m);return d.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'})};
+const empty=t=>`<p class="muted" style="margin:6px 0">${t}</p>`;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),2200)}
+
+/* ---------- state ---------- */
+const KEY='myday_v1';
+const defaults=()=>({tasks:[],plan:{},priorities:{},review:{},expenses:[],budget:0,diet:'',meals:{},water:{},waterGoal:8,events:[],reminders:[],news:{energy:'energy sector India renewable power',politics:'India politics',
+  alt:'thewire.in, scroll.in, theprint.in, newslaundry.com, thequint.com, swarajyamag.com, thenewsminute.com',
+  fact:'altnews.in, boomlive.in, factly.in, newschecker.in, factchecker.in, thequint.com/news/webqoof',
+  yt:''}});
+let S;
+try{S=Object.assign(defaults(),JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){S=defaults()}
+S.news=Object.assign(defaults().news,S.news||{});
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Storage full — export a backup')}}
+
+/* ---------- photos (IndexedDB) ---------- */
+const dbp=new Promise((res,rej)=>{const r=indexedDB.open('myday',1);r.onupgradeneeded=()=>r.result.createObjectStore('photos',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+async function idb(mode,fn){const db=await dbp;return new Promise((res,rej)=>{const tx=db.transaction('photos',mode);const req=fn(tx.objectStore('photos'));tx.oncomplete=()=>res(req&&req.result);tx.onerror=()=>rej(tx.error)})}
+const getPhotos=()=>idb('readonly',s=>s.getAll());
+const putPhoto=o=>idb('readwrite',s=>s.put(o));
+const delPhoto=id=>idb('readwrite',s=>s.delete(id));
+
+/* ---------- tabs ---------- */
+let curTab='today';
+const R={today:renderToday,tasks:renderTasks,money:renderMoney,diet:renderDiet,feed:renderFeed,camera:renderGallery,cal:renderCal};
+function showTab(t){curTab=t;document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='tab-'+t));document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.id===t));R[t]();scrollTo(0,0)}
+
+/* ---------- TODAY ---------- */
+function greet(){const h=new Date().getHours();return h<12?'Good morning':h<17?'Good afternoon':'Good evening'}
+const stat=(l,v,c='')=>`<div class="stat"><small>${l}</small><b class="${c}">${v}</b></div>`;
+function renderToday(){
+  const t=todayStr(),now=new Date();
+  $('#hello').textContent=greet()+' 👋';
+  $('#dateLine').textContent=now.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const open=S.tasks.filter(x=>!x.done),over=open.filter(x=>x.due&&x.due<t).length;
+  const spent=S.expenses.filter(e=>e.date===t).reduce((a,e)=>a+e.amt,0);
+  const next=S.reminders.filter(r=>!r.done&&new Date(r.at)>now).sort((a,b)=>a.at.localeCompare(b.at))[0];
+  $('#stats').innerHTML=stat('Open tasks',open.length+(over?` <small class="bad">(${over} overdue)</small>`:''))+stat('Spent today',inr(spent))+stat('Water',(S.water[t]||0)+' / '+S.waterGoal)+stat('Next reminder',next?fmtDT(next.at):'—');
+  const pr=S.priorities[t]||[];['p1','p2','p3'].forEach((id,i)=>$('#'+id).value=pr[i]||'');
+  const plan=(S.plan[t]||[]).slice().sort((a,b)=>a.time.localeCompare(b.time));
+  $('#planList').innerHTML=plan.length?plan.map(x=>`<div class="item ${x.done?'done':''}"><input type="checkbox" class="chk" data-act="planToggle" data-id="${x.id}" ${x.done?'checked':''}><div class="grow"><small class="muted">${fmtT(x.time)}</small><div class="t">${esc(x.text)}</div></div><button class="x" data-act="planDel" data-id="${x.id}">✕</button></div>`).join(''):empty('No plan yet. A day without a plan gets spent on other people\'s priorities.');
+  const ev=S.events.filter(e=>e.date===t).map(e=>({k:'ev',time:e.time||'',text:e.title}));
+  const rm=S.reminders.filter(r=>r.at.slice(0,10)===t).map(r=>({k:'rm',time:r.at.slice(11,16),text:r.text,done:r.done}));
+  const all=[...ev,...rm].sort((a,b)=>a.time.localeCompare(b.time));
+  $('#todayRem').innerHTML=all.length?all.map(x=>`<div class="item ${x.done?'done':''}"><span>${x.k==='ev'?'📅':'⏰'}</span><div class="grow t">${esc(x.text)}</div><small class="muted">${fmtT(x.time)}</small></div>`).join(''):empty('Nothing scheduled.');
+  $('#review').value=S.review[t]||'';
+}
+['p1','p2','p3'].forEach((id,i)=>$('#'+id).addEventListener('input',e=>{const t=todayStr();S.priorities[t]=S.priorities[t]||['','',''];S.priorities[t][i]=e.target.value;save()}));
+$('#review').addEventListener('input',e=>{S.review[todayStr()]=e.target.value;save()});
+$('#planForm').addEventListener('submit',e=>{e.preventDefault();const t=todayStr();(S.plan[t]=S.plan[t]||[]).push({id:uid(),time:$('#planTime').value,text:$('#planText').value.trim(),done:false});save();$('#planText').value='';renderToday()});
+
+/* ---------- TASKS ---------- */
+let taskFilter='open';
+function renderTasks(){
+  const t=todayStr(),po={H:0,M:1,L:2};
+  let list=S.tasks.slice().sort((a,b)=>(a.done-b.done)||(po[a.pri]-po[b.pri])||(a.due||'9999').localeCompare(b.due||'9999'));
+  if(taskFilter==='open')list=list.filter(x=>!x.done);else if(taskFilter==='done')list=list.filter(x=>x.done);
+  const hi=S.tasks.filter(x=>!x.done&&x.pri==='H').length;
+  const over=S.tasks.filter(x=>!x.done&&x.due&&x.due<t).length;
+  let w='';
+  if(hi>3)w+=`<div class="warnbox">You have ${hi} "High" priorities. If everything is high, nothing is. Pick 3 and downgrade the rest.</div>`;
+  if(over)w+=`<div class="warnbox">${over} task(s) overdue. Do it, reschedule it with a real date, or delete it. Don't let it rot.</div>`;
+  $('#taskWarn').innerHTML=w;
+  $('#taskList').innerHTML=list.length?list.map(x=>{const od=x.due&&!x.done&&x.due<t;return `<div class="item ${x.done?'done':''}"><input type="checkbox" class="chk" data-act="taskToggle" data-id="${x.id}" ${x.done?'checked':''}><div class="grow"><div class="t">${esc(x.text)}</div>${x.due?`<small class="${od?'bad':'muted'}">${od?'Overdue · ':x.due===t?'Due today · ':'Due '}${fmtDate(x.due)}</small>`:''}</div><span class="tag ${x.pri}">${{H:'High',M:'Med',L:'Low'}[x.pri]}</span><button class="x" data-act="taskDel" data-id="${x.id}">✕</button></div>`}).join(''):empty('Nothing here.');
+}
+$('#taskForm').addEventListener('submit',e=>{e.preventDefault();S.tasks.push({id:uid(),text:$('#taskText').value.trim(),pri:$('#taskPri').value,due:$('#taskDue').value,done:false});save();$('#taskText').value='';$('#taskDue').value='';renderTasks();toast('Task added')});
+
+/* ---------- MONEY ---------- */
+function renderMoney(){
+  const t=todayStr(),m=t.slice(0,7);
+  if(!$('#expDate').value)$('#expDate').value=t;
+  $('#budget').value=S.budget||'';
+  const mon=S.expenses.filter(e=>e.date.slice(0,7)===m);
+  const total=mon.reduce((a,e)=>a+e.amt,0),today=S.expenses.filter(e=>e.date===t).reduce((a,e)=>a+e.amt,0);
+  let h=`<div class="stats" style="margin-bottom:10px">${stat('Today',inr(today))}${stat('This month',inr(total))}</div>`;
+  if(S.budget>0){
+    const left=S.budget-total,pct=Math.min(100,total/S.budget*100);
+    const d=new Date(),dim=new Date(d.getFullYear(),d.getMonth()+1,0).getDate(),daysLeft=dim-d.getDate()+1;
+    h+=`<small class="${left<0?'bad':'muted'}">${left<0?'Over budget by '+inr(-left)+'. Stop non-essential spending now.':inr(left)+' left · about '+inr(left/daysLeft)+'/day for '+daysLeft+' days'}</small><div class="bar"><i style="width:${pct}%;background:${pct>90?'var(--bad)':pct>70?'var(--warn)':'var(--ok)'}"></i></div>`;
+  }
+  $('#moneySummary').innerHTML=h;
+  const cats={};mon.forEach(e=>cats[e.cat]=(cats[e.cat]||0)+e.amt);
+  const arr=Object.entries(cats).sort((a,b)=>b[1]-a[1]),max=arr[0]?arr[0][1]:1;
+  $('#catBars').innerHTML=arr.map(([c,v])=>`<div style="display:flex;justify-content:space-between;font-size:13px"><span>${esc(c)}</span><span class="muted">${inr(v)} · ${Math.round(v/total*100)}%</span></div><div class="bar"><i style="width:${v/max*100}%"></i></div>`).join('');
+  const rec=S.expenses.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id)).slice(0,40);
+  $('#expList').innerHTML=rec.length?rec.map(e=>`<div class="item"><div class="grow"><div>${esc(e.cat)}${e.note?' · <span class="muted">'+esc(e.note)+'</span>':''}</div><small class="muted">${fmtDate(e.date)}</small></div><b>${inr(e.amt)}</b><button class="x" data-act="expDel" data-id="${e.id}">✕</button></div>`).join(''):empty('No expenses logged. If you don\'t track it, you can\'t control it.');
+}
+$('#expForm').addEventListener('submit',e=>{e.preventDefault();const a=parseFloat($('#expAmt').value);if(!(a>0))return;S.expenses.push({id:uid(),amt:a,cat:$('#expCat').value,note:$('#expNote').value.trim(),date:$('#expDate').value||todayStr()});save();$('#expAmt').value='';$('#expNote').value='';renderMoney();toast('Expense added')});
+$('#budget').addEventListener('change',e=>{S.budget=parseFloat(e.target.value)||0;save();renderMoney()});
+
+/* ---------- DIET ---------- */
+function renderDiet(){
+  const t=todayStr();
+  $('#dietText').value=S.diet||'';
+  $('#waterCount').textContent=S.water[t]||0;$('#waterGoal').textContent=S.waterGoal;
+  const order={Breakfast:0,Lunch:1,Snack:2,Dinner:3};
+  const ms=(S.meals[t]||[]).slice().sort((a,b)=>order[a.type]-order[b.type]);
+  $('#mealList').innerHTML=ms.length?ms.map(m=>`<div class="item"><span class="tag">${m.type}</span><div class="grow">${esc(m.text)}</div><button class="x" data-act="mealDel" data-id="${m.id}">✕</button></div>`).join(''):empty('No meals logged today.');
+}
+$('#dietText').addEventListener('input',e=>{S.diet=e.target.value;save()});
+$('#mealForm').addEventListener('submit',e=>{e.preventDefault();const t=todayStr();(S.meals[t]=S.meals[t]||[]).push({id:uid(),type:$('#mealType').value,text:$('#mealText').value.trim()});save();$('#mealText').value='';renderDiet()});
+
+/* ---------- FEED ---------- */
+const HEALTH=["Drink a glass of water within 30 minutes of waking up.","Aim for 7–9 hours of sleep and keep the same wake-up time, even on weekends.","Take a 10-minute walk after meals — it helps control blood sugar.","Fill half your plate with vegetables at lunch and dinner.","Get 10–20 minutes of morning daylight to set your body clock.","Stand up and move for 2–3 minutes after every 45 minutes of sitting.","Include protein at every meal — dal, eggs, paneer, curd, sprouts, chicken or fish.","Cut sugary drinks; reduce the sugar in your tea or coffee a little each week.","Stop caffeine at least 8 hours before bed.","Do strength training 2–3 times a week — squats, push-ups and lunges count.","Finish dinner 2–3 hours before you sleep.","Keep screens away for 30–60 minutes before bed.","Go easy on salt: pickles, papad, namkeen and packaged snacks add up fast.","Choose whole grains and millets over refined maida.","Replace one packaged snack with a fruit today.","Wash your hands before eating and after commuting.","Do 5 minutes of slow breathing: inhale 4 seconds, exhale 6 seconds.","Eyes: every 20 minutes, look 20 feet away for 20 seconds.","Check your posture: screen at eye level, feet flat, shoulders down.","Get a yearly check-up — BP, sugar, lipids, and vitamins your doctor advises.","Limit alcohol and avoid tobacco completely — quitting at any age helps.","Eat a small handful of nuts or seeds daily.","Stretch for 5 minutes after waking or before bed.","Eat slowly and keep your phone away during meals.","Keep a water bottle visible on your desk — you'll drink more.","Take the stairs for 1–3 floors instead of the lift.","Include curd or buttermilk for gut health.","Protect your skin in strong sun: shade, sunscreen and water.","Brush twice and floss daily — gum health is linked to heart health.","Spend time with people you like; social connection is linked to longer life."];
+const MIND=["Name it to tame it: label your emotion in one word — \"anxious\", \"hurt\", \"angry\".","Before reacting, pause and breathe for 90 seconds; the first surge usually passes.","Box breathing: in 4, hold 4, out 4, hold 4 — repeat 4 times.","Ask: will this matter in 5 days? 5 months? 5 years?","Write the worry down, then write one action you control.","Separate facts from stories: what actually happened vs. what you're telling yourself.","Stuck in a mood? Move your body for 10 minutes.","Set one clear boundary today — say it plainly and politely.","Swap \"I have to\" for \"I choose to\" on one task and notice the shift.","Give worries a 15-minute slot later in the day instead of all day.","Grounding 5-4-3-2-1: 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste.","Angry? Write your reply but wait an hour before sending it.","Catch self-criticism and ask: would I say this to a friend?","Write down three specific things that went well today.","Do the task you're avoiding first — avoidance feeds anxiety.","Cap doom-scrolling: set a fixed time limit for news and social media.","Own your part of a conflict — but don't carry other people's parts.","Call or message one person you trust today.","Overwhelmed? Shrink the task to the next 5-minute step and do only that.","You can feel the fear and still act — feelings are information, not orders.","Don't make big decisions in strong emotion — sleep on it.","In hard conversations use: \"I feel… when… I need…\".","Forgive one small mistake quickly — yours or someone else's.","HALT check: are you Hungry, Angry, Lonely or Tired? Fix that first.","When tension rises, lower your voice and slow down; others tend to follow.","Compare yourself with who you were last month, not with other people.","Let one thing be \"good enough\" today.","Spend 10 minutes outside without your phone.","Plan one small thing to look forward to this week.","If low mood or anxiety lasts over two weeks or affects daily life, talk to a doctor or counsellor. India: Tele-MANAS 14416 (free, 24×7)."];
+function dayIdx(){const d=new Date();return Math.floor((d-new Date(d.getFullYear(),0,0))/864e5)}
+function pick5(a){const s=(dayIdx()*5)%a.length;return Array.from({length:5},(_,i)=>a[(s+i)%a.length])}
+const gnews=q=>'https://news.google.com/rss/search?q='+encodeURIComponent(q)+'&hl=en-IN&gl=IN&ceid=IN:en';
+const sitesQ=list=>'('+list.split(',').map(s=>s.trim()).filter(Boolean).map(s=>'site:'+s).join(' OR ')+')';
+const R2J=u=>'https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(u);
+const cleanQ=t=>t.replace(/[^\p{L}\p{N}\s]/gu,' ').split(/\s+/).filter(w=>w.length>3).slice(0,8).join(' ');
+function newsLinks(title){const q=cleanQ(title);return `<span style="display:flex;gap:14px;margin-top:4px"><a class="lnk" target="_blank" rel="noopener" href="https://toolbox.google.com/factcheck/explorer/search/${encodeURIComponent(q)};hl=en">🔍 Check</a><a class="lnk" target="_blank" rel="noopener" href="https://news.google.com/search?q=${encodeURIComponent(q)}&hl=en-IN&gl=IN&ceid=IN:en">⚖️ Compare</a></span>`}
+function fmtPub(d){if(!d)return'';const x=new Date(d.replace(' ','T')+'Z');return isNaN(x)?'':x.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}
+function drawNews(key,items,opt={}){
+  $('#'+key).innerHTML=items.map(i=>{let title=i.title,src=i.src||'';if(!src){const k=title.lastIndexOf(' - ');if(k>0){src=title.slice(k+3);title=title.slice(0,k)}}
+    return `<div style="padding:9px 0;border-bottom:1px solid var(--line)"><a href="${esc(i.link)}" target="_blank" rel="noopener" style="padding:0;border:0">${esc(title)}<small>${esc(src)}${i.date?' · '+fmtPub(i.date):''}</small></a>${opt.noCheck?'':newsLinks(title)}</div>`}).join('');
+}
+async function fetchItems(url){const r=await fetch(R2J(url));const j=await r.json();if(j.status!=='ok'||!j.items)throw 0;return j}
+async function cached(key,sig,force,loader,fallbackHtml,opt){
+  const ck='feed_'+key;let c=null;try{c=JSON.parse(localStorage.getItem(ck)||'null')}catch(e){}
+  if(!force&&c&&c.q===sig&&Date.now()-c.t<3*36e5)return drawNews(key,c.items,opt);
+  $('#'+key).innerHTML=empty('Loading…');
+  try{const items=await loader();if(!items.length)throw 0;localStorage.setItem(ck,JSON.stringify({t:Date.now(),q:sig,items}));drawNews(key,items,opt)}
+  catch(e){if(c&&c.items)drawNews(key,c.items,opt);else $('#'+key).innerHTML=fallbackHtml}
+}
+function gnFallback(q){return empty(`Couldn't load (offline?). <a class="lnk" target="_blank" href="https://news.google.com/search?q=${encodeURIComponent(q)}&hl=en-IN&gl=IN&ceid=IN:en">Open in Google News →</a>`)}
+function loadGN(key,q,force){return cached(key,q,force,async()=>(await fetchItems(gnews(q))).items.slice(0,5).map(i=>({title:i.title,link:i.link,date:i.pubDate})),gnFallback(q))}
+function parseYt(){return S.news.yt.split('\n').map(l=>{const [n,id]=l.includes('|')?l.split('|'):['',l];const m=(id||'').match(/UC[\w-]{22}/);return m?{name:n.trim(),id:m[0]}:null}).filter(Boolean)}
+function loadYT(force){
+  const ch=parseYt(),ytSearch=`<a class="lnk" target="_blank" href="https://www.youtube.com/results?search_query=${encodeURIComponent(S.news.politics+' news analysis')}&sp=CAI%253D">Search latest on YouTube →</a>`;
+  if(!ch.length){$('#yt').innerHTML=empty('No channels added yet. Add the YouTubers you follow in ⚙️ Settings — include at least one you usually disagree with. ')+ytSearch;return}
+  return cached('yt',ch.map(c=>c.id).join(','),force,async()=>{
+    const res=await Promise.allSettled(ch.map(c=>fetchItems('https://www.youtube.com/feeds/videos.xml?channel_id='+c.id).then(j=>j.items.slice(0,3).map(i=>({title:i.title,link:i.link,date:i.pubDate,src:'▶ '+(c.name||j.feed.title||'YouTube')})))));
+    return res.filter(r=>r.status==='fulfilled').flatMap(r=>r.value).sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,5);
+  },empty("Couldn't load channels (offline or wrong channel ID). ")+ytSearch);
+}
+function renderFeed(force){
+  force=force===true;
+  $('#health').innerHTML=pick5(HEALTH).map(x=>`<li>${esc(x)}</li>`).join('');
+  $('#mind').innerHTML=pick5(MIND).map(x=>`<li>${esc(x)}</li>`).join('');
+  $('#altSrc').textContent=S.news.alt;
+  loadGN('energy',S.news.energy,force);
+  loadGN('politics',S.news.politics,force);
+  loadGN('alt','India '+sitesQ(S.news.alt),force);
+  loadGN('fact',sitesQ(S.news.fact),force);
+  loadYT(force);
+}
+
+/* ---------- CAMERA ---------- */
+let galFilter='all',pendType='person',pendImg=null,viewId=null;
+const TYPES={person:'🧑 Person',place:'📍 Place',card:'💼 Visiting card'};
+function compress(file){return new Promise((res,rej)=>{const img=new Image(),u=URL.createObjectURL(file);img.onload=()=>{const sc=Math.min(1,1400/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.78))};img.onerror=rej;img.src=u})}
+async function onFile(e){
+  const f=e.target.files[0];if(!f)return;
+  try{pendImg=await compress(f)}catch(err){return toast('Could not read image')}
+  $('#pdImg').src=pendImg;$('#pdType').textContent=TYPES[pendType];
+  $('#pdTitle').value='';$('#pdNote').value='';$('#pdPhone').value='';
+  $('#pdPhoneWrap').style.display=pendType==='place'?'none':'block';
+  $('#pdTitle').placeholder=pendType==='place'?'Place name':pendType==='card'?'Name / company':'Name';
+  $('#photoDlg').showModal();
+}
+$('#camInput').addEventListener('change',onFile);$('#pickInput').addEventListener('change',onFile);
+async function renderGallery(){
+  let ps=[];try{ps=await getPhotos()}catch(e){}
+  ps.sort((a,b)=>b.ts-a.ts);if(galFilter!=='all')ps=ps.filter(p=>p.type===galFilter);
+  $('#gallery').style.display=ps.length?'grid':'block';
+  $('#gallery').innerHTML=ps.length?ps.map(p=>`<figure data-act="photoView" data-id="${p.id}"><img src="${p.img}" alt="" loading="lazy"><figcaption>${TYPES[p.type].split(' ')[0]} ${esc(p.title||'Untitled')}</figcaption></figure>`).join(''):empty('No captures yet.');
+}
+async function openPhoto(id){
+  const p=(await getPhotos()).find(x=>x.id===id);if(!p)return;viewId=id;
+  $('#vdImg').src=p.img;$('#vdTitle').textContent=p.title||'Untitled';
+  $('#vdMeta').textContent=TYPES[p.type]+' · '+new Date(p.ts).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'});
+  $('#vdPhone').innerHTML=p.phone?`<a class="lnk" style="font-size:15px" href="tel:${esc(p.phone.replace(/[^\d+]/g,''))}">📞 ${esc(p.phone)}</a>`:'';
+  $('#vdNote').textContent=p.note||'';$('#viewDlg').showModal();
+}
+
+/* ---------- CALENDAR & REMINDERS ---------- */
+const nowD=new Date();let calY=nowD.getFullYear(),calM=nowD.getMonth(),calSel=todayStr();
+function gcal(title,date,time){const s=new Date(date+'T'+(time||'09:00')),e=new Date(s.getTime()+30*6e4),f=d=>d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'T'+p2(d.getHours())+p2(d.getMinutes())+'00';return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(title)+'&dates='+f(s)+'/'+f(e)}
+function hasItems(d){return S.events.some(e=>e.date===d)||S.reminders.some(r=>!r.done&&r.at.slice(0,10)===d)||S.tasks.some(x=>!x.done&&x.due===d)}
+function renderCal(){
+  const t=todayStr(),first=new Date(calY,calM,1),start=(first.getDay()+6)%7,days=new Date(calY,calM+1,0).getDate();
+  $('#calTitle').textContent=first.toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  let h=['M','T','W','T','F','S','S'].map(d=>`<div class="wd">${d}</div>`).join('')+'<div></div>'.repeat(start);
+  for(let i=1;i<=days;i++){const d=calY+'-'+p2(calM+1)+'-'+p2(i);h+=`<div class="d ${d===t?'today':''} ${d===calSel?'sel':''}" data-act="calDay" data-id="${d}">${i}${hasItems(d)?'<span class="dot"></span>':''}</div>`}
+  $('#calGrid').innerHTML=h;
+  $('#dayTitle').textContent=new Date(calSel+'T00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});
+  const ev=S.events.filter(e=>e.date===calSel).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+  const rm=S.reminders.filter(r=>r.at.slice(0,10)===calSel);
+  const tk=S.tasks.filter(x=>x.due===calSel);
+  let dh=ev.map(e=>`<div class="item"><span>📅</span><div class="grow">${esc(e.title)}<br><small class="muted">${e.time?fmtT(e.time):'All day'}</small></div><a class="lnk" target="_blank" href="${gcal(e.title,e.date,e.time)}">+Google</a><button class="x" data-act="evDel" data-id="${e.id}">✕</button></div>`).join('');
+  dh+=rm.map(r=>`<div class="item ${r.done?'done':''}"><span>⏰</span><div class="grow t">${esc(r.text)}</div><small class="muted">${fmtT(r.at.slice(11,16))}</small></div>`).join('');
+  dh+=tk.map(x=>`<div class="item ${x.done?'done':''}"><span>✅</span><div class="grow t">${esc(x.text)}</div><span class="tag ${x.pri}">${x.pri}</span></div>`).join('');
+  $('#dayDetail').innerHTML=dh||empty('Nothing on this day.');
+  const now=new Date(),rs=S.reminders.slice().sort((a,b)=>a.at.localeCompare(b.at));
+  const up=rs.filter(r=>!r.done),dn=rs.filter(r=>r.done).slice(-5);
+  $('#remList').innerHTML=(up.length||dn.length)?[...up,...dn].map(r=>{const past=new Date(r.at)<now&&!r.done;return `<div class="item ${r.done?'done':''}"><input type="checkbox" class="chk" data-act="remToggle" data-id="${r.id}" ${r.done?'checked':''}><div class="grow"><div class="t">${esc(r.text)}</div><small class="${past?'bad':'muted'}">${past?'Missed · ':''}${fmtDT(r.at)}</small></div><a class="lnk" target="_blank" href="${gcal('⏰ '+r.text,r.at.slice(0,10),r.at.slice(11,16))}" title="Add to Google Calendar">📅</a><button class="x" data-act="remDel" data-id="${r.id}">✕</button></div>`}).join(''):empty('No reminders.');
+}
+$('#evForm').addEventListener('submit',e=>{e.preventDefault();S.events.push({id:uid(),date:calSel,time:$('#evTime').value,title:$('#evText').value.trim()});save();$('#evText').value='';$('#evTime').value='';renderCal();toast('Event added')});
+$('#remForm').addEventListener('submit',e=>{e.preventDefault();S.reminders.push({id:uid(),text:$('#remText').value.trim(),at:$('#remAt').value,done:false,fired:false});save();$('#remText').value='';$('#remAt').value='';renderCal();toast('Reminder set')});
+function fireRem(list){
+  try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(e){}
+  const d=$('#remAlert'),txt=list.map(r=>r.text).join('\n');
+  $('#remAlertText').textContent=d.open?$('#remAlertText').textContent+'\n'+txt:txt;
+  if(!d.open)d.showModal();
+  try{if('Notification' in window&&Notification.permission==='granted'){if(SWR)list.forEach(r=>SWR.showNotification('⏰ Reminder',{body:r.text,icon:'icon-192.png',vibrate:[300,150,300],tag:r.id}));else list.forEach(r=>new Notification('⏰ Reminder',{body:r.text}))}}catch(e){}
+}
+function checkRem(){const now=Date.now(),due=S.reminders.filter(r=>!r.done&&!r.fired&&new Date(r.at).getTime()<=now);if(!due.length)return;due.forEach(r=>r.fired=true);save();fireRem(due);if(curTab==='cal'||curTab==='today')R[curTab]()}
+
+/* ---------- SETTINGS / BACKUP ---------- */
+async function exportData(){
+  let photos=[];try{photos=await getPhotos()}catch(e){}
+  const b=new Blob([JSON.stringify({app:'myday',v:1,S,photos})],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='myday-backup-'+todayStr()+'.json';document.body.appendChild(a);a.click();a.remove();toast('Backup downloaded');
+}
+$('#importInput').addEventListener('change',async e=>{
+  const f=e.target.files[0];if(!f)return;
+  try{const j=JSON.parse(await f.text());if(j.app!=='myday')throw 0;S=Object.assign(defaults(),j.S);save();for(const p of(j.photos||[]))await putPhoto(p);toast('Backup restored');$('#setDlg').close();showTab(curTab)}catch(err){toast('Not a valid backup file')}
+  e.target.value='';
+});
+
+/* ---------- actions (event delegation) ---------- */
+const A={
+  tab:id=>showTab(id),
+  planToggle:id=>{const x=(S.plan[todayStr()]||[]).find(p=>p.id===id);if(x){x.done=!x.done;save();renderToday()}},
+  planDel:id=>{const t=todayStr();S.plan[t]=(S.plan[t]||[]).filter(p=>p.id!==id);save();renderToday()},
+  taskToggle:id=>{const x=S.tasks.find(p=>p.id===id);if(x){x.done=!x.done;save();renderTasks()}},
+  taskDel:id=>{S.tasks=S.tasks.filter(p=>p.id!==id);save();renderTasks()},
+  taskFilter:(id,b)=>{taskFilter=id;document.querySelectorAll('#taskChips .chip').forEach(c=>c.classList.toggle('on',c===b));renderTasks()},
+  expDel:id=>{S.expenses=S.expenses.filter(p=>p.id!==id);save();renderMoney()},
+  water:id=>{const t=todayStr();S.water[t]=Math.max(0,(S.water[t]||0)+(+id));save();renderDiet();if(S.water[t]===S.waterGoal)toast('💧 Water goal hit!')},
+  mealDel:id=>{const t=todayStr();S.meals[t]=(S.meals[t]||[]).filter(m=>m.id!==id);save();renderDiet()},
+  feedRefresh:()=>renderFeed(true),
+  cap:id=>{pendType=id;const i=$('#camInput');i.value='';i.click()},
+  pick:()=>{const t=prompt('Type: 1 = Person, 2 = Place, 3 = Visiting card','1');if(!t)return;pendType={'1':'person','2':'place','3':'card'}[t.trim()]||'person';const i=$('#pickInput');i.value='';i.click()},
+  photoSave:async()=>{if(!pendImg)return;await putPhoto({id:uid(),type:pendType,title:$('#pdTitle').value.trim(),phone:$('#pdPhone').value.trim(),note:$('#pdNote').value.trim(),img:pendImg,ts:Date.now()});pendImg=null;$('#photoDlg').close();toast('Saved');renderGallery()},
+  photoView:id=>openPhoto(id),
+  photoDel:async()=>{if(!viewId||!confirm('Delete this photo? This cannot be undone.'))return;await delPhoto(viewId);$('#viewDlg').close();renderGallery()},
+  photoShare:async()=>{const p=(await getPhotos()).find(x=>x.id===viewId);if(!p)return;try{const blob=await (await fetch(p.img)).blob(),file=new File([blob],(p.title||'photo')+'.jpg',{type:'image/jpeg'}),text=[p.title,p.phone,p.note].filter(Boolean).join('\n');if(navigator.canShare&&navigator.canShare({files:[file]}))await navigator.share({files:[file],title:p.title||'Photo',text});else if(navigator.share)await navigator.share({title:p.title,text});else toast('Sharing not supported here')}catch(e){}},
+  galFilter:(id,b)=>{galFilter=id;document.querySelectorAll('#galChips .chip').forEach(c=>c.classList.toggle('on',c===b));renderGallery()},
+  calMove:id=>{calM+=+id;if(calM<0){calM=11;calY--}if(calM>11){calM=0;calY++}renderCal()},
+  calDay:id=>{calSel=id;renderCal()},
+  evDel:id=>{S.events=S.events.filter(e=>e.id!==id);save();renderCal()},
+  remToggle:id=>{const r=S.reminders.find(x=>x.id===id);if(r){r.done=!r.done;save();renderCal()}},
+  remDel:id=>{S.reminders=S.reminders.filter(x=>x.id!==id);save();renderCal()},
+  closeDlg:id=>$('#'+id).close(),
+  settings:()=>{$('#setEnergy').value=S.news.energy;$('#setAlt').value=S.news.alt;$('#setFact').value=S.news.fact;$('#setYt').value=S.news.yt;$('#setPolitics').value=S.news.politics;$('#setWater').value=S.waterGoal;$('#setDlg').showModal()},
+  saveSettings:()=>{S.news.energy=$('#setEnergy').value.trim()||defaults().news.energy;S.news.politics=$('#setPolitics').value.trim()||defaults().news.politics;S.news.alt=$('#setAlt').value.trim()||defaults().news.alt;S.news.fact=$('#setFact').value.trim()||defaults().news.fact;S.news.yt=$('#setYt').value;S.waterGoal=Math.max(1,parseInt($('#setWater').value)||8);save();toast('Settings saved');$('#setDlg').close();showTab(curTab)},
+  install:async()=>{if(!deferredInstall)return toast('Use Chrome ⋮ → Install app');deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;$('#installBtn').style.display='none'},
+  export:()=>exportData(),
+  import:()=>$('#importInput').click(),
+  notifPerm:async()=>{if(!('Notification' in window))return toast('Notifications not supported here');try{const p=await Notification.requestPermission();toast(p==='granted'?'Notifications allowed':'Notifications blocked')}catch(e){toast('Not available on this device')}},
+  wipe:async()=>{if(!confirm('Erase ALL tasks, expenses, notes and photos? This cannot be undone. Export a backup first.'))return;localStorage.removeItem(KEY);const ps=await getPhotos();for(const p of ps)await delPhoto(p.id);S=defaults();save();$('#setDlg').close();showTab('today');toast('Everything erased')}
+};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;if(b.tagName==='A'&&b.dataset.act)e.preventDefault();const f=A[b.dataset.act];if(f)f(b.dataset.id,b)});
+
+/* ---------- init ---------- */
+let SWR=null;
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').then(r=>SWR=r).catch(()=>{});
+let deferredInstall=null;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;const b=$('#installBtn');if(b)b.style.display='block'});
+showTab('today');
+checkRem();setInterval(checkRem,20000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){checkRem();R[curTab]()}});
+</script>
+</body>
+</html>
